@@ -4,7 +4,7 @@ from .models import Cliente, Produto, Fiado
 
 @admin.register(Cliente)
 class ClienteAdmin(admin.ModelAdmin):
-    list_display = ("nome", "telefone", "endereco")
+    list_display = ("nome", "telefone", "divida_total")
 
 
 @admin.register(Produto)

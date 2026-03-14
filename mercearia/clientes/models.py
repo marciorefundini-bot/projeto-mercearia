@@ -7,6 +7,15 @@ class Cliente(models.Model):
 
     def __str__(self):
         return self.nome
+    
+    def divida_total(self):
+        total = 0
+        fiados = self.fiado_set.all()
+
+        for f in fiados:
+            total += f.quantidade * f.produto.preco
+
+        return total
 
 
 class Produto(models.Model):
