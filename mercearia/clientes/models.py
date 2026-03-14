@@ -31,6 +31,7 @@ class Fiado(models.Model):
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE)
     quantidade = models.IntegerField()
     data = models.DateField(auto_now_add=True)
+    pago = models.BooleanField(default=False)
 
     def total(self):
         return self.quantidade * self.produto.preco

@@ -22,3 +22,4 @@ class ProdutoAdmin(admin.ModelAdmin):
 @admin.register(Fiado)
 class FiadoAdmin(admin.ModelAdmin):
     list_display = ("cliente", "produto", "quantidade", "data", "total")
+    list_filter = ("data", "cliente")
