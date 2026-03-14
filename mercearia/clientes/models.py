@@ -14,4 +14,17 @@ class Produto(models.Model):
     preco = models.DecimalField(max_digits=8, decimal_places=2)
 
     def __str__(self):
-        return self.nome  
+        return self.nome
+
+
+class Fiado(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    produto = models.ForeignKey(Produto, on_delete=models.CASCADE)
+    quantidade = models.IntegerField()
+    data = models.DateField(auto_now_add=True)
+
+    def total(self):
+        return self.quantidade * self.produto.preco
+
+    def __str__(self):
+        return f"{self.cliente} - {self.produto}"
