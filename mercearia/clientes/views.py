@@ -4,8 +4,8 @@ from django.core.exceptions import ValidationError
 from django.db.models import Prefetch
 from django.urls import reverse
 
-from .models import Cliente, Produto, Fiado
-from .forms import ClienteForm, ProdutoForm, FiadoForm
+from .models import Cliente, Produto, Fiado, Venda
+from .forms import ClienteForm, ProdutoForm, FiadoForm, VendaForm
 
 
 def dashboard(request):
@@ -14,6 +14,7 @@ def dashboard(request):
         'total_produtos': Produto.objects.count(),
         'fiados_pendentes': Fiado.objects.filter(pago=False).count(),
         'produtos_criticos': Produto.objects.filter(estoque__lte=3).count(),
+        'total_vendas': Venda.objects.count(),
     }
     return render(request, 'clientes/dashboard.html', context)
 
@@ -166,3 +167,37 @@ def pagar_fiado(request, pk):
         fiado.save()
         messages.success(request, f'Fiado de {fiado.cliente} marcado como pago!')
     return redirect(request.POST.get('next', reverse('lista_fiados')))
+
+
+def lista_vendas(request):
+    vendas = Venda.objects.select_related('produto', 'cliente').order_by('-data')
+    return render(request, 'clientes/vendas_list.html', {'vendas': vendas})
+
+
+def criar_venda(request):
+    if request.method == 'POST':
+        form = VendaForm(request.POST)
+        if form.is_valid():
+            venda = form.save(commit=False)
+            venda.valor_unitario = venda.produto.preco
+            try:
+                venda.save()
+                messages.success(request, 'Venda registrada!')
+                return redirect('lista_vendas')
+            except ValidationError as e:
+                messages.error(request, e.message)
+    else:
+        form = VendaForm()
+    return render(request, 'clientes/venda_form.html', {'form': form, 'titulo': 'Nova Venda'})
+
+
+def deletar_venda(request, pk):
+    venda = get_object_or_404(Venda, pk=pk)
+    if request.method == 'POST':
+        venda.delete()
+        messages.success(request, 'Venda removida.')
+        return redirect('lista_vendas')
+    return render(request, 'clientes/confirmar_deletar.html', {
+        'objeto': venda,
+        'voltar_url': reverse('lista_vendas'),
+    })
