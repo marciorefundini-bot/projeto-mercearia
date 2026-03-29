@@ -1,0 +1,101 @@
+{% extends 'clientes/base.html' %}
+{% block title %}{{ cliente.nome }} — Mercearia da Neusa{% endblock %}
+{% block nav_clientes %}active{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">
+        <i class="bi bi-person-circle me-2"></i>{{ cliente.nome }}
+    </h2>
+    <div class="d-flex gap-2">
+        <a href="{% url 'editar_cliente' cliente.pk %}" class="btn btn-warning">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+        <a href="{% url 'lista_clientes' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Informações do cliente -->
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold bg-light">
+                <i class="bi bi-info-circle me-1"></i> Informações
+            </div>
+            <div class="card-body">
+                <p class="mb-2"><i class="bi bi-telephone text-muted me-2"></i>{{ cliente.telefone }}</p>
+                <p class="mb-3"><i class="bi bi-geo-alt text-muted me-2"></i>{{ cliente.endereco }}</p>
+                <hr>
+                {% with divida=cliente.divida_total %}
+                    {% if divida > 0 %}
+                        <div class="alert alert-danger py-2 mb-0">
+                            <strong>Débito total:</strong> R$ {{ divida }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-success py-2 mb-0">
+                            <i class="bi bi-check-circle"></i> Sem débitos pendentes
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Histórico de fiados -->
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                <span class="fw-semibold"><i class="bi bi-receipt me-1"></i> Histórico de Fiados</span>
+                <a href="{% url 'criar_fiado' %}" class="btn btn-sm btn-danger">
+                    <i class="bi bi-plus"></i> Novo Fiado
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Produto</th>
+                            <th>Qtd</th>
+                            <th>Total</th>
+                            <th>Data</th>
+                            <th>Situação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fiado in fiados %}
+                        <tr>
+                            <td>{{ fiado.produto.nome }}</td>
+                            <td>{{ fiado.quantidade }}</td>
+                            <td>R$ {{ fiado.total }}</td>
+                            <td class="text-muted small">{{ fiado.data }}</td>
+                            <td>
+                                {% if fiado.pago %}
+                                    <span class="badge bg-success">Pago</span>
+                                {% else %}
+                                    <span class="badge bg-danger me-1">Pendente</span>
+                                    <form method="post" action="{% url 'pagar_fiado' fiado.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{% url 'detalhe_cliente' cliente.pk %}">
+                                        <button type="submit" class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-check"></i> Pagar
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                Nenhum fiado registrado para este cliente.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
