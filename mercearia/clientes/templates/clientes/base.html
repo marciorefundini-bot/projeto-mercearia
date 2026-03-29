@@ -37,6 +37,7 @@
         .card-stat.produtos  { border-color: #27ae60; }
         .card-stat.fiados    { border-color: #e74c3c; }
         .card-stat.criticos  { border-color: #f39c12; }
+        .card-stat.vendas    { border-color: #8e44ad; }
         .table thead th { font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; }
     </style>
 </head>
@@ -76,6 +77,11 @@
                         <i class="bi bi-receipt"></i> Fiados
                     </a>
                 </li>
+                <li>
+                    <a class="nav-link {% block nav_vendas %}{% endblock %}" href="{% url 'lista_vendas' %}">
+                        <i class="bi bi-cart-check"></i> Vendas
+                    </a>
+                </li>
             </ul>
             <hr>
             <div class="section-label">Atalhos</div>
@@ -83,6 +89,11 @@
                 <li>
                     <a class="nav-link" href="{% url 'criar_cliente' %}">
                         <i class="bi bi-person-plus"></i> Novo Cliente
+                    </a>
+                </li>
+                <li>
+                    <a class="nav-link" href="{% url 'criar_venda' %}">
+                        <i class="bi bi-cart-plus"></i> Nova Venda
                     </a>
                 </li>
                 <li>
