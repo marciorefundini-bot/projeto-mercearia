@@ -1,5 +1,5 @@
 from django import forms
-from .models import Cliente, Produto, Fiado
+from .models import Cliente, Produto, Fiado, Venda
 
 
 class ClienteForm(forms.ModelForm):
@@ -46,6 +46,34 @@ class FiadoForm(forms.ModelForm):
         labels = {
             'cliente': 'Cliente',
             'produto': 'Produto',
+            'quantidade': 'Quantidade',
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        produto = cleaned_data.get('produto')
+        qtd = cleaned_data.get('quantidade')
+
+        if produto and qtd and not self.instance.pk:
+            if produto.estoque < qtd:
+                raise forms.ValidationError(
+                    f"Estoque insuficiente! '{produto.nome}' tem apenas {produto.estoque} unidade(s)."
+                )
+        return cleaned_data
+
+
+class VendaForm(forms.ModelForm):
+    class Meta:
+        model = Venda
+        fields = ['produto', 'cliente', 'quantidade']
+        widgets = {
+            'produto': forms.Select(attrs={'class': 'form-select'}),
+            'cliente': forms.Select(attrs={'class': 'form-select'}),
+            'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+        }
+        labels = {
+            'produto': 'Produto',
+            'cliente': 'Cliente (opcional)',
             'quantidade': 'Quantidade',
         }
 
