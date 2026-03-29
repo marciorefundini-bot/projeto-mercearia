@@ -1,31 +1,40 @@
-from django.db import models
+from django.db import models, transaction
+from django.core.exceptions import ValidationError
+
 
 class Cliente(models.Model):
     nome = models.CharField(max_length=100)
     telefone = models.CharField(max_length=20)
     endereco = models.CharField(max_length=200)
-    # Removi o estoque daqui, pois o cliente não tem estoque
-    
+
+    class Meta:
+        verbose_name_plural = 'Clientes'
+        ordering = ['nome']
+
     def __str__(self):
         return self.nome
-    
+
     def divida_total(self):
-        total = 0
-        fiados = self.fiado_set.filter(pago=False)
-        for f in fiados:
-            total += f.quantidade * f.produto.preco
-        return total
+        # soma apenas os fiados em aberto; usa cache do prefetch quando disponível
+        return sum(
+            f.quantidade * f.produto.preco
+            for f in self.fiado_set.all()
+            if not f.pago
+        )
+
 
 class Produto(models.Model):
     nome = models.CharField(max_length=100)
     preco = models.DecimalField(max_digits=8, decimal_places=2)
-    # O estoque deve ficar aqui!
-    estoque = models.IntegerField(default=0) 
+    estoque = models.IntegerField(default=0)
+
+    class Meta:
+        verbose_name_plural = 'Produtos'
+        ordering = ['nome']
 
     def __str__(self):
         return self.nome
 
-from django.core.exceptions import ValidationError # Importante adicionar esse import no topo!
 
 class Fiado(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
@@ -34,23 +43,26 @@ class Fiado(models.Model):
     data = models.DateField(auto_now_add=True)
     pago = models.BooleanField(default=False)
 
+    class Meta:
+        verbose_name_plural = 'Fiados'
+        ordering = ['-data']
+
     def total(self):
         return self.quantidade * self.produto.preco
 
     def save(self, *args, **kwargs):
-        # LÓGICA DE TRAVA: Se for uma venda nova
         if not self.pk:
-            # 1. Verifica se tem estoque suficiente
             if self.produto.estoque < self.quantidade:
                 raise ValidationError(
-                    f"Estoque insuficiente! O produto {self.produto.nome} só tem {self.produto.estoque} unidades."
+                    f"Estoque insuficiente! '{self.produto.nome}' "
+                    f"tem apenas {self.produto.estoque} unidade(s)."
                 )
-            
-            # 2. Se tiver estoque, desconta e salva o produto
-            self.produto.estoque -= self.quantidade
-            self.produto.save()
-            
-        super().save(*args, **kwargs)
+            with transaction.atomic():
+                self.produto.estoque -= self.quantidade
+                self.produto.save()
+                super().save(*args, **kwargs)
+        else:
+            super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.cliente} - {self.produto}"
