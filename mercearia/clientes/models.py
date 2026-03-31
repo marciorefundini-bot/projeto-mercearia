@@ -15,11 +15,10 @@ class Cliente(models.Model):
         return self.nome
 
     def divida_total(self):
-        # soma apenas os fiados em aberto; usa cache do prefetch quando disponível
         return sum(
-            f.quantidade * f.produto.preco
-            for f in self.fiado_set.all()
-            if not f.pago
+            v.quantidade * v.valor_unitario
+            for v in self.venda_set.all()
+            if v.tipo == Venda.TIPO_FIADO and not v.pago
         )
 
 
@@ -36,43 +35,20 @@ class Produto(models.Model):
         return self.nome
 
 
-class Fiado(models.Model):
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    produto = models.ForeignKey(Produto, on_delete=models.CASCADE)
-    quantidade = models.IntegerField()
-    data = models.DateField(auto_now_add=True)
-    pago = models.BooleanField(default=False)
-
-    class Meta:
-        verbose_name_plural = 'Fiados'
-        ordering = ['-data']
-
-    def total(self):
-        return self.quantidade * self.produto.preco
-
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            if self.produto.estoque < self.quantidade:
-                raise ValidationError(
-                    f"Estoque insuficiente! '{self.produto.nome}' "
-                    f"tem apenas {self.produto.estoque} unidade(s)."
-                )
-            with transaction.atomic():
-                self.produto.estoque -= self.quantidade
-                self.produto.save()
-                super().save(*args, **kwargs)
-        else:
-            super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.cliente} - {self.produto}"
-
-
 class Venda(models.Model):
+    TIPO_AVISTA = 'avista'
+    TIPO_FIADO = 'fiado'
+    TIPO_CHOICES = [
+        (TIPO_AVISTA, 'À Vista'),
+        (TIPO_FIADO, 'Fiado (A Prazo)'),
+    ]
+
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE)
     cliente = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True, blank=True)
     quantidade = models.IntegerField()
     valor_unitario = models.DecimalField(max_digits=8, decimal_places=2)
+    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES, default=TIPO_AVISTA)
+    pago = models.BooleanField(default=False)
     data = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -97,4 +73,4 @@ class Venda(models.Model):
             super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Venda {self.pk} - {self.produto.nome}"
+        return f"Venda {self.pk} - {self.produto.nome} ({self.get_tipo_display()})"
