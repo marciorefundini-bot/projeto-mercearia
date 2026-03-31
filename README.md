@@ -20,7 +20,7 @@ python manage.py createsuperuser
 
 ## Estrutura
 
-- `clientes/models.py` — Cliente, Produto, Fiado
+- `clientes/models.py` — Cliente, Produto, Venda
 - `clientes/views.py` — todo o CRUD
 - `clientes/forms.py` — validação dos formulários
 - `clientes/admin.py` — painel admin customizado
