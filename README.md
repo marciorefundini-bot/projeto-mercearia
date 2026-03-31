@@ -1,6 +1,7 @@
-# Projeto Mercearia
+# Projeto Mercearia da Neusa
 
 Sistema de controle de clientes, produtos e vendas feito em Django.
+Suporta vendas à vista e a prazo (fiado) num único módulo unificado.
 
 ## Como rodar
 
@@ -20,17 +21,19 @@ python manage.py createsuperuser
 
 ## Estrutura
 
-- `clientes/models.py` — Cliente, Produto, Venda
+- `clientes/models.py` — Cliente, Produto, Venda (com tipo: avista/fiado)
 - `clientes/views.py` — todo o CRUD
 - `clientes/forms.py` — validação dos formulários
 - `clientes/admin.py` — painel admin customizado
 
 ## Observações
 
+- Venda tem dois tipos: **à vista** (pago no ato) e **fiado** (a prazo)
+- Para fiado, informar o cliente é obrigatório
 - Ao registrar uma venda o estoque é descontado automaticamente
 - Se não tiver estoque suficiente o sistema bloqueia o cadastro
 - Produtos com 3 ou menos unidades aparecem com alerta vermelho
-- O saldo de cada cliente é calculado somando os fiados em aberto
+- O saldo de cada cliente é calculado somando as vendas a prazo em aberto
 
 ## Dependências
 
