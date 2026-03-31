@@ -1,5 +1,5 @@
 from django import forms
-from .models import Cliente, Produto, Fiado, Venda
+from .models import Cliente, Produto, Venda
 
 
 class ClienteForm(forms.ModelForm):
@@ -34,53 +34,32 @@ class ProdutoForm(forms.ModelForm):
         }
 
 
-class FiadoForm(forms.ModelForm):
-    class Meta:
-        model = Fiado
-        fields = ['cliente', 'produto', 'quantidade']
-        widgets = {
-            'cliente': forms.Select(attrs={'class': 'form-select'}),
-            'produto': forms.Select(attrs={'class': 'form-select'}),
-            'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
-        }
-        labels = {
-            'cliente': 'Cliente',
-            'produto': 'Produto',
-            'quantidade': 'Quantidade',
-        }
-
-    def clean(self):
-        cleaned_data = super().clean()
-        produto = cleaned_data.get('produto')
-        qtd = cleaned_data.get('quantidade')
-
-        if produto and qtd and not self.instance.pk:
-            if produto.estoque < qtd:
-                raise forms.ValidationError(
-                    f"Estoque insuficiente! '{produto.nome}' tem apenas {produto.estoque} unidade(s)."
-                )
-        return cleaned_data
-
-
 class VendaForm(forms.ModelForm):
     class Meta:
         model = Venda
-        fields = ['produto', 'cliente', 'quantidade']
+        fields = ['tipo', 'produto', 'cliente', 'quantidade']
         widgets = {
+            'tipo': forms.Select(attrs={'class': 'form-select', 'id': 'id_tipo'}),
             'produto': forms.Select(attrs={'class': 'form-select'}),
-            'cliente': forms.Select(attrs={'class': 'form-select'}),
+            'cliente': forms.Select(attrs={'class': 'form-select', 'id': 'id_cliente'}),
             'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
         }
         labels = {
+            'tipo': 'Tipo de Venda',
             'produto': 'Produto',
-            'cliente': 'Cliente (opcional)',
+            'cliente': 'Cliente',
             'quantidade': 'Quantidade',
         }
 
     def clean(self):
         cleaned_data = super().clean()
+        tipo = cleaned_data.get('tipo')
         produto = cleaned_data.get('produto')
         qtd = cleaned_data.get('quantidade')
+        cliente = cleaned_data.get('cliente')
+
+        if tipo == Venda.TIPO_FIADO and not cliente:
+            self.add_error('cliente', 'Cliente é obrigatório para vendas a prazo (fiado).')
 
         if produto and qtd and not self.instance.pk:
             if produto.estoque < qtd:
