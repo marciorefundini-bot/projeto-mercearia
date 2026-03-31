@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Django
+*.sqlite3
+*.log
+local_settings.py
+db.sqlite3
+
+# Ambiente virtual
+venv/
+.env
+.venv/
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Claude Code (memória interna da ferramenta)
+.claude/
+
+# Scripts e arquivos gerados localmente
+gerar_documentacao.py
+*.docx

@@ -1,0 +1,56 @@
+{% extends 'clientes/base.html' %}
+{% block title %}{{ titulo }} — Mercearia da Neusa{% endblock %}
+{% block nav_vendas %}active{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0"><i class="bi bi-cart-plus me-2"></i>{{ titulo }}</h2>
+    <a href="{% url 'lista_vendas' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+</div>
+
+<div class="card shadow-sm" style="max-width: 600px;">
+    <div class="card-body p-4">
+        <p class="text-muted small mb-4">
+            <i class="bi bi-info-circle me-1"></i>
+            O valor é calculado automaticamente com base no preço atual do produto.
+            O cliente é opcional — deixe em branco para vendas avulsas.
+        </p>
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    <i class="bi bi-exclamation-triangle"></i> {{ error }}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% for field in form %}
+            <div class="mb-3">
+                <label class="form-label fw-semibold" for="{{ field.id_for_label }}">
+                    {{ field.label }}
+                </label>
+                {{ field }}
+                {% if field.errors %}
+                    {% for error in field.errors %}
+                        <div class="text-danger small mt-1">
+                            <i class="bi bi-exclamation-circle"></i> {{ error }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn px-4" style="background:#8e44ad;color:white;">
+                    <i class="bi bi-check-lg"></i> Registrar Venda
+                </button>
+                <a href="{% url 'lista_vendas' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
