@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Cliente, Produto, Fiado, Venda
-from .forms import FiadoForm
+from .models import Cliente, Produto, Venda
 
 admin.site.site_header = "MERCEARIA DA NEUSA"
 admin.site.index_title = "Painel de Controle de Vendas e Estoque"
@@ -44,34 +43,40 @@ class ProdutoAdmin(admin.ModelAdmin):
     status_estoque.short_description = 'Estoque'
 
 
-@admin.register(Fiado)
-class FiadoAdmin(admin.ModelAdmin):
-    form = FiadoForm
-    list_display = ('cliente', 'produto', 'quantidade', 'data', 'status_pagamento', 'pago')
-    list_filter = ('pago', 'data', 'cliente')
-    list_editable = ('pago',)
-    search_fields = ('cliente__nome', 'produto__nome')
-    ordering = ('-data',)
-
-    def status_pagamento(self, obj):
-        if obj.pago:
-            return format_html(
-                '<span style="background:#2980b9;color:white;padding:4px 10px;border-radius:4px;font-weight:bold;">CONCLUÍDO</span>'
-            )
-        return format_html(
-            '<span style="background:#c0392b;color:white;padding:4px 10px;border-radius:4px;font-weight:bold;">PENDENTE</span>'
-        )
-
-    status_pagamento.short_description = 'Situação'
-
-
 @admin.register(Venda)
 class VendaAdmin(admin.ModelAdmin):
-    list_display = ('produto', 'cliente', 'quantidade', 'valor_unitario', 'total_venda', 'data')
-    list_filter = ('data', 'produto')
+    list_display = ('produto', 'cliente', 'tipo_badge', 'quantidade', 'valor_unitario', 'total_venda', 'situacao', 'data')
+    list_filter = ('tipo', 'pago', 'data', 'produto')
+    list_editable = ('pago',) if False else ()
     search_fields = ('produto__nome', 'cliente__nome')
     ordering = ('-data',)
     readonly_fields = ('valor_unitario', 'data')
+
+    def tipo_badge(self, obj):
+        if obj.tipo == Venda.TIPO_FIADO:
+            return format_html(
+                '<span style="background:#e74c3c;color:white;padding:3px 8px;border-radius:4px;">Fiado</span>'
+            )
+        return format_html(
+            '<span style="background:#27ae60;color:white;padding:3px 8px;border-radius:4px;">À Vista</span>'
+        )
+
+    tipo_badge.short_description = 'Tipo'
+
+    def situacao(self, obj):
+        if obj.tipo == Venda.TIPO_AVISTA:
+            return format_html(
+                '<span style="background:#2980b9;color:white;padding:3px 8px;border-radius:4px;">Pago</span>'
+            )
+        if obj.pago:
+            return format_html(
+                '<span style="background:#2980b9;color:white;padding:3px 8px;border-radius:4px;">Pago</span>'
+            )
+        return format_html(
+            '<span style="background:#c0392b;color:white;padding:3px 8px;border-radius:4px;font-weight:bold;">Pendente</span>'
+        )
+
+    situacao.short_description = 'Situação'
 
     def total_venda(self, obj):
         return format_html('<strong>R$ {}</strong>', obj.total())
