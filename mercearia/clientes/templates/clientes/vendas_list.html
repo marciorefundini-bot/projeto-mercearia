@@ -5,8 +5,24 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold mb-0"><i class="bi bi-cart-check me-2"></i>Vendas</h2>
-    <a href="{% url 'criar_venda' %}" class="btn btn-purple" style="background:#8e44ad;color:white;">
+    <a href="{% url 'criar_venda' %}" class="btn" style="background:#8e44ad;color:white;">
         <i class="bi bi-plus"></i> Nova Venda
+    </a>
+</div>
+
+<!-- Filtros -->
+<div class="mb-3 d-flex gap-2">
+    <a href="{% url 'lista_vendas' %}"
+       class="btn btn-sm {% if not tipo_filtro %}btn-secondary{% else %}btn-outline-secondary{% endif %}">
+        Todas
+    </a>
+    <a href="{% url 'lista_vendas' %}?tipo=avista"
+       class="btn btn-sm {% if tipo_filtro == 'avista' %}btn-success{% else %}btn-outline-success{% endif %}">
+        À Vista
+    </a>
+    <a href="{% url 'lista_vendas' %}?tipo=fiado"
+       class="btn btn-sm {% if tipo_filtro == 'fiado' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+        Fiado
     </a>
 </div>
 
@@ -17,9 +33,11 @@
                 <tr>
                     <th>Produto</th>
                     <th>Cliente</th>
+                    <th>Tipo</th>
                     <th>Qtd</th>
                     <th>Valor Unit.</th>
                     <th>Total</th>
+                    <th>Situação</th>
                     <th>Data</th>
                     <th class="text-center">Ações</th>
                 </tr>
@@ -37,11 +55,39 @@
                             <span class="text-muted small">—</span>
                         {% endif %}
                     </td>
+                    <td>
+                        {% if venda.tipo == 'fiado' %}
+                            <span class="badge bg-danger">Fiado</span>
+                        {% else %}
+                            <span class="badge bg-success">À Vista</span>
+                        {% endif %}
+                    </td>
                     <td>{{ venda.quantidade }}</td>
                     <td>R$ {{ venda.valor_unitario }}</td>
                     <td><strong>R$ {{ venda.total }}</strong></td>
+                    <td>
+                        {% if venda.tipo == 'avista' %}
+                            <span class="badge bg-primary">Pago</span>
+                        {% elif venda.pago %}
+                            <span class="badge bg-primary">Pago</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Pendente</span>
+                        {% endif %}
+                    </td>
                     <td class="text-muted small">{{ venda.data|date:"d/m/Y H:i" }}</td>
                     <td class="text-center">
+                        {% if venda.tipo == 'fiado' and not venda.pago %}
+                        <form method="post" action="{% url 'pagar_venda' venda.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-success" title="Marcar como pago">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                        <a href="{% url 'editar_venda' venda.pk %}"
+                           class="btn btn-sm btn-outline-warning" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </a>
                         <a href="{% url 'deletar_venda' venda.pk %}"
                            class="btn btn-sm btn-outline-danger" title="Excluir">
                             <i class="bi bi-trash"></i>
@@ -50,7 +96,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="text-center text-muted py-5">
+                    <td colspan="9" class="text-center text-muted py-5">
                         <i class="bi bi-cart-x fs-2 d-block mb-2"></i>
                         Nenhuma venda registrada.
                         <a href="{% url 'criar_venda' %}">Registre a primeira!</a>

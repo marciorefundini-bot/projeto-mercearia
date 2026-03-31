@@ -43,12 +43,12 @@
         </div>
     </div>
 
-    <!-- Histórico de fiados -->
+    <!-- Histórico de vendas a prazo (fiado) -->
     <div class="col-md-8">
         <div class="card shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center bg-light">
-                <span class="fw-semibold"><i class="bi bi-receipt me-1"></i> Histórico de Fiados</span>
-                <a href="{% url 'criar_fiado' %}" class="btn btn-sm btn-danger">
+                <span class="fw-semibold"><i class="bi bi-receipt me-1"></i> Vendas a Prazo (Fiado)</span>
+                <a href="{% url 'criar_venda' %}" class="btn btn-sm btn-danger">
                     <i class="bi bi-plus"></i> Novo Fiado
                 </a>
             </div>
@@ -64,18 +64,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for fiado in fiados %}
+                        {% for venda in vendas_prazo %}
                         <tr>
-                            <td>{{ fiado.produto.nome }}</td>
-                            <td>{{ fiado.quantidade }}</td>
-                            <td>R$ {{ fiado.total }}</td>
-                            <td class="text-muted small">{{ fiado.data }}</td>
+                            <td>{{ venda.produto.nome }}</td>
+                            <td>{{ venda.quantidade }}</td>
+                            <td>R$ {{ venda.total }}</td>
+                            <td class="text-muted small">{{ venda.data|date:"d/m/Y" }}</td>
                             <td>
-                                {% if fiado.pago %}
+                                {% if venda.pago %}
                                     <span class="badge bg-success">Pago</span>
                                 {% else %}
                                     <span class="badge bg-danger me-1">Pendente</span>
-                                    <form method="post" action="{% url 'pagar_fiado' fiado.pk %}" class="d-inline">
+                                    <form method="post" action="{% url 'pagar_venda' venda.pk %}" class="d-inline">
                                         {% csrf_token %}
                                         <input type="hidden" name="next" value="{% url 'detalhe_cliente' cliente.pk %}">
                                         <button type="submit" class="btn btn-sm btn-outline-success">
@@ -88,7 +88,7 @@
                         {% empty %}
                         <tr>
                             <td colspan="5" class="text-center text-muted py-4">
-                                Nenhum fiado registrado para este cliente.
+                                Nenhuma venda a prazo registrada para este cliente.
                             </td>
                         </tr>
                         {% endfor %}

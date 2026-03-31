@@ -14,8 +14,8 @@
     <div class="card-body p-4">
         <p class="text-muted small mb-4">
             <i class="bi bi-info-circle me-1"></i>
-            O valor é calculado automaticamente com base no preço atual do produto.
-            O cliente é opcional — deixe em branco para vendas avulsas.
+            Selecione <strong>À Vista</strong> para pagamento imediato ou <strong>Fiado</strong> para venda a prazo.
+            Para fiado, o cliente é obrigatório.
         </p>
         <form method="post" novalidate>
             {% csrf_token %}
@@ -32,6 +32,9 @@
             <div class="mb-3">
                 <label class="form-label fw-semibold" for="{{ field.id_for_label }}">
                     {{ field.label }}
+                    {% if field.name == 'cliente' %}
+                        <span class="text-muted fw-normal small" id="cliente-hint">(obrigatório para fiado)</span>
+                    {% endif %}
                 </label>
                 {{ field }}
                 {% if field.errors %}
@@ -46,7 +49,7 @@
 
             <div class="d-flex gap-2 mt-4">
                 <button type="submit" class="btn px-4" style="background:#8e44ad;color:white;">
-                    <i class="bi bi-check-lg"></i> Registrar Venda
+                    <i class="bi bi-check-lg"></i> Salvar
                 </button>
                 <a href="{% url 'lista_vendas' %}" class="btn btn-outline-secondary">Cancelar</a>
             </div>
