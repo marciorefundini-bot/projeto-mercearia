@@ -1,6 +1,6 @@
 # Projeto Mercearia
 
-Sistema de controle de clientes, produtos e fiados feito em Django.
+Sistema de controle de clientes, produtos e vendas feito em Django.
 
 ## Como rodar
 
