@@ -27,7 +27,7 @@ python manage.py createsuperuser
 
 ## Observações
 
-- Ao registrar um fiado o estoque é descontado automaticamente
+- Ao registrar uma venda o estoque é descontado automaticamente
 - Se não tiver estoque suficiente o sistema bloqueia o cadastro
 - Produtos com 3 ou menos unidades aparecem com alerta vermelho
 - O saldo de cada cliente é calculado somando os fiados em aberto
