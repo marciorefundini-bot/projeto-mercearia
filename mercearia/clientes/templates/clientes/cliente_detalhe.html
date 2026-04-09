@@ -25,8 +25,24 @@
                 <i class="bi bi-info-circle me-1"></i> Informações
             </div>
             <div class="card-body">
-                <p class="mb-2"><i class="bi bi-telephone text-muted me-2"></i>{{ cliente.telefone }}</p>
-                <p class="mb-3"><i class="bi bi-geo-alt text-muted me-2"></i>{{ cliente.endereco }}</p>
+                {% if not cliente.telefone or not cliente.endereco %}
+                <!-- Alerta de cadastro incompleto: criado via cadastro rápido na venda -->
+                <div class="alert alert-warning py-2 mb-3 small">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    Cadastro incompleto.
+                    <a href="{% url 'editar_cliente' cliente.pk %}" class="alert-link">
+                        Preencher telefone e endereço.
+                    </a>
+                </div>
+                {% endif %}
+                <p class="mb-2">
+                    <i class="bi bi-telephone text-muted me-2"></i>
+                    {{ cliente.telefone|default:"Não informado" }}
+                </p>
+                <p class="mb-3">
+                    <i class="bi bi-geo-alt text-muted me-2"></i>
+                    {{ cliente.endereco|default:"Não informado" }}
+                </p>
                 <hr>
                 {% with divida=cliente.divida_total %}
                     {% if divida > 0 %}

@@ -1,6 +1,7 @@
 {% extends 'clientes/base.html' %}
 {% block title %}Produtos — Mercearia da Neusa{% endblock %}
 {% block nav_produtos %}active{% endblock %}
+{% block mob_produtos %}active{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -22,11 +23,13 @@
                 </tr>
             </thead>
             <tbody>
-                {% for produto in produtos %}
+                <!-- page_obj é o objeto Page do Paginator — iterável como queryset -->
+                {% for produto in page_obj %}
                 <tr>
                     <td class="fw-semibold">{{ produto.nome }}</td>
                     <td>R$ {{ produto.preco }}</td>
                     <td>
+                        <!-- Estoque crítico: ≤ 3 unidades. Threshold também usado no dashboard e admin. -->
                         {% if produto.estoque <= 3 %}
                             <span class="badge bg-danger fs-6">
                                 {{ produto.estoque }} — REPOR!
@@ -37,11 +40,13 @@
                     </td>
                     <td class="text-center">
                         <a href="{% url 'editar_produto' produto.pk %}"
-                           class="btn btn-sm btn-outline-warning" title="Editar">
+                           class="btn btn-sm btn-outline-warning" title="Editar"
+                           aria-label="Editar {{ produto.nome }}">
                             <i class="bi bi-pencil"></i>
                         </a>
                         <a href="{% url 'deletar_produto' produto.pk %}"
-                           class="btn btn-sm btn-outline-danger" title="Excluir">
+                           class="btn btn-sm btn-outline-danger" title="Excluir"
+                           aria-label="Excluir {{ produto.nome }}">
                             <i class="bi bi-trash"></i>
                         </a>
                     </td>
@@ -58,5 +63,36 @@
             </tbody>
         </table>
     </div>
+
+    <!-- ── Paginação ─────────────────────────────────────────────────────── -->
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+        <small class="text-muted">
+            Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }}
+            de {{ page_obj.paginator.count }} produtos
+        </small>
+        <nav aria-label="Paginação de produtos">
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}"
+                           aria-label="Página anterior">&laquo;</a>
+                    </li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}"
+                           aria-label="Próxima página">&raquo;</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

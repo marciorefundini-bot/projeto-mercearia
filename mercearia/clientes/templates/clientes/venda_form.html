@@ -1,6 +1,7 @@
 {% extends 'clientes/base.html' %}
 {% block title %}{{ titulo }} — Mercearia da Neusa{% endblock %}
 {% block nav_vendas %}active{% endblock %}
+{% block mob_vendas %}active{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -10,14 +11,15 @@
     </a>
 </div>
 
-<div class="card shadow-sm" style="max-width: 600px;">
+<div class="card shadow-sm" style="max-width: 640px;">
     <div class="card-body p-4">
         <p class="text-muted small mb-4">
             <i class="bi bi-info-circle me-1"></i>
-            Selecione <strong>À Vista</strong> para pagamento imediato ou <strong>Fiado</strong> para venda a prazo.
-            Para fiado, o cliente é obrigatório.
+            Selecione <strong>À Vista</strong> para pagamento imediato ou
+            <strong>Fiado</strong> para venda a prazo. Para fiado, o cliente é obrigatório.
         </p>
-        <form method="post" novalidate>
+
+        <form method="post" novalidate id="formVenda">
             {% csrf_token %}
 
             {% if form.non_field_errors %}
@@ -28,27 +30,65 @@
             </div>
             {% endif %}
 
-            {% for field in form %}
+            <!-- ── Tipo de Venda ──────────────────────────────────────── -->
             <div class="mb-3">
-                <label class="form-label fw-semibold" for="{{ field.id_for_label }}">
-                    {{ field.label }}
-                    {% if field.name == 'cliente' %}
-                        <span class="text-muted fw-normal small" id="cliente-hint">(obrigatório para fiado)</span>
-                    {% endif %}
+                <label class="form-label fw-semibold" for="{{ form.tipo.id_for_label }}">
+                    {{ form.tipo.label }}
                 </label>
-                {{ field }}
-                {% if field.errors %}
-                    {% for error in field.errors %}
-                        <div class="text-danger small mt-1">
-                            <i class="bi bi-exclamation-circle"></i> {{ error }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
+                {{ form.tipo }}
+                {% for error in form.tipo.errors %}
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>
+                {% endfor %}
             </div>
-            {% endfor %}
+
+            <!-- ── Produto (com pesquisa via Tom Select) ─────────────── -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold" for="{{ form.produto.id_for_label }}">
+                    {{ form.produto.label }}
+                </label>
+                {{ form.produto }}
+                {% for error in form.produto.errors %}
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- ── Cliente (com pesquisa + botão de cadastro rápido) ─── -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold" for="{{ form.cliente.id_for_label }}">
+                    {{ form.cliente.label }}
+                    <span class="text-muted fw-normal small">(obrigatório para fiado)</span>
+                </label>
+                <div class="d-flex gap-2 align-items-start">
+                    <div class="flex-grow-1">
+                        {{ form.cliente }}
+                    </div>
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalNovoCliente"
+                            title="Cadastrar novo cliente"
+                            style="margin-top: 1px;">
+                        <i class="bi bi-person-plus"></i>
+                    </button>
+                </div>
+                {% for error in form.cliente.errors %}
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <!-- ── Quantidade ─────────────────────────────────────────── -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold" for="{{ form.quantidade.id_for_label }}">
+                    {{ form.quantidade.label }}
+                </label>
+                {{ form.quantidade }}
+                {% for error in form.quantidade.errors %}
+                    <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle"></i> {{ error }}</div>
+                {% endfor %}
+            </div>
 
             <div class="d-flex gap-2 mt-4">
-                <button type="submit" class="btn px-4" style="background:#8e44ad;color:white;">
+                <button type="submit" class="btn px-4" style="background:#8e44ad; color:white;">
                     <i class="bi bi-check-lg"></i> Salvar
                 </button>
                 <a href="{% url 'lista_vendas' %}" class="btn btn-outline-secondary">Cancelar</a>
@@ -56,4 +96,144 @@
         </form>
     </div>
 </div>
+
+<!-- ── Modal: cadastro rápido de cliente ─────────────────────────────────── -->
+<div class="modal fade" id="modalNovoCliente" tabindex="-1"
+     aria-labelledby="modalNovoClienteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title fw-bold" id="modalNovoClienteLabel">
+                    <i class="bi bi-person-plus me-1"></i> Novo Cliente
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning py-2 small mb-3">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    Cadastro rápido — apenas o nome é salvo agora.
+                    Telefone e endereço podem ser preenchidos depois no perfil do cliente.
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" for="novoClienteNome">Nome</label>
+                    <input type="text" id="novoClienteNome" class="form-control"
+                           placeholder="Nome completo" autocomplete="off">
+                    <div id="novoClienteErro" class="text-danger small mt-1 d-none"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary btn-sm" id="btnSalvarClienteRapido">
+                    <i class="bi bi-check-lg"></i> Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Tom Select: CSS e JS carregados após o Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+<script>
+// ── Tom Select: dropdown de Produto com campo de pesquisa ─────────────────
+new TomSelect('#id_produto', {
+    searchField: ['text'],
+    placeholder: 'Digite para pesquisar...',
+    allowEmptyOption: true,
+    create: false,
+    render: {
+        no_results: function() {
+            return '<div class="no-results">Nenhum produto encontrado</div>';
+        }
+    }
+});
+
+// ── Tom Select: dropdown de Cliente com campo de pesquisa ─────────────────
+const tomCliente = new TomSelect('#id_cliente', {
+    searchField: ['text'],
+    placeholder: 'Digite para pesquisar...',
+    allowEmptyOption: true,
+    create: false,
+    render: {
+        no_results: function() {
+            return '<div class="no-results">Nenhum cliente encontrado</div>';
+        }
+    }
+});
+
+// ── Modal: cadastro rápido de cliente ─────────────────────────────────────
+// Executado após Bootstrap estar disponível (este bloco fica depois do bundle.js)
+const btnSalvar = document.getElementById('btnSalvarClienteRapido');
+const inputNome = document.getElementById('novoClienteNome');
+const divErro   = document.getElementById('novoClienteErro');
+const modalEl   = document.getElementById('modalNovoCliente');
+
+// Limpa o campo e erros toda vez que o modal é aberto
+modalEl.addEventListener('show.bs.modal', function () {
+    inputNome.value = '';
+    divErro.classList.add('d-none');
+    divErro.textContent = '';
+});
+
+// Foca automaticamente o campo nome após a animação de abertura
+modalEl.addEventListener('shown.bs.modal', function () {
+    inputNome.focus();
+});
+
+// Permite salvar pressionando Enter no campo nome
+inputNome.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        btnSalvar.click();
+    }
+});
+
+btnSalvar.addEventListener('click', function () {
+    const nome = inputNome.value.trim();
+
+    if (!nome) {
+        divErro.textContent = 'O nome é obrigatório.';
+        divErro.classList.remove('d-none');
+        inputNome.focus();
+        return;
+    }
+
+    btnSalvar.disabled = true;
+    btnSalvar.textContent = 'Salvando...';
+
+    // Lê o CSRF token do input hidden gerado pelo {% csrf_token %} do formulário
+    const csrfToken = document.querySelector('#formVenda [name=csrfmiddlewaretoken]').value;
+
+    fetch('{% url "criar_cliente_rapido" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken,
+        },
+        body: new URLSearchParams({ nome: nome })
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+        if (data.erro) {
+            divErro.textContent = data.erro;
+            divErro.classList.remove('d-none');
+            return;
+        }
+        // Adiciona o novo cliente ao Tom Select e o seleciona automaticamente
+        tomCliente.addOption({ value: data.id, text: data.nome });
+        tomCliente.setValue(data.id);
+        bootstrap.Modal.getInstance(modalEl).hide();
+    })
+    .catch(function () {
+        divErro.textContent = 'Erro ao salvar. Tente novamente.';
+        divErro.classList.remove('d-none');
+    })
+    .finally(function () {
+        btnSalvar.disabled = false;
+        btnSalvar.innerHTML = '<i class="bi bi-check-lg"></i> Salvar';
+    });
+});
+</script>
 {% endblock %}

@@ -1,0 +1,46 @@
+# ── Banco de dados SQLite (nunca versionar dados reais) ─────────────────────
+db.sqlite3
+db.sqlite3-journal
+
+# ── Variáveis de ambiente e segredos ────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── Arquivos compilados Python ───────────────────────────────────────────────
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.py[cod]
+
+# ── Arquivos estáticos gerados por collectstatic ─────────────────────────────
+staticfiles/
+static_root/
+
+# ── Ambientes virtuais ────────────────────────────────────────────────────────
+venv/
+env/
+.venv/
+.env/
+
+# ── IDEs e editores ───────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── macOS ─────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Cobertura de testes ───────────────────────────────────────────────────────
+.coverage
+htmlcov/
+.pytest_cache/
+
+# ── Distribuição / empacotamento ──────────────────────────────────────────────
+dist/
+build/
+*.egg-info/

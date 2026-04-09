@@ -1,16 +1,21 @@
 {% extends 'clientes/base.html' %}
 {% block title %}Vendas — Mercearia da Neusa{% endblock %}
 {% block nav_vendas %}active{% endblock %}
+{% block mob_vendas %}active{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold mb-0"><i class="bi bi-cart-check me-2"></i>Vendas</h2>
-    <a href="{% url 'criar_venda' %}" class="btn" style="background:#8e44ad;color:white;">
+    <a href="{% url 'criar_venda' %}" class="btn" style="background:#8e44ad; color:white;">
         <i class="bi bi-plus"></i> Nova Venda
     </a>
 </div>
 
-<!-- Filtros -->
+<!-- ── Filtros por tipo ────────────────────────────────────────────────────── -->
+<!--
+    O filtro preserva apenas o parâmetro 'tipo'; ao mudar de tipo, a paginação
+    volta para a página 1 automaticamente (sem &page= na URL).
+-->
 <div class="mb-3 d-flex gap-2">
     <a href="{% url 'lista_vendas' %}"
        class="btn btn-sm {% if not tipo_filtro %}btn-secondary{% else %}btn-outline-secondary{% endif %}">
@@ -43,7 +48,8 @@
                 </tr>
             </thead>
             <tbody>
-                {% for venda in vendas %}
+                <!-- page_obj é o objeto Page do Paginator — iterável como queryset -->
+                {% for venda in page_obj %}
                 <tr>
                     <td class="fw-semibold">{{ venda.produto.nome }}</td>
                     <td>
@@ -52,6 +58,7 @@
                                 {{ venda.cliente.nome }}
                             </a>
                         {% else %}
+                            <!-- Venda à vista sem cliente registrado -->
                             <span class="text-muted small">—</span>
                         {% endif %}
                     </td>
@@ -64,6 +71,7 @@
                     </td>
                     <td>{{ venda.quantidade }}</td>
                     <td>R$ {{ venda.valor_unitario }}</td>
+                    <!-- total() = quantidade × valor_unitario — calculado no model -->
                     <td><strong>R$ {{ venda.total }}</strong></td>
                     <td>
                         {% if venda.tipo == 'avista' %}
@@ -76,20 +84,26 @@
                     </td>
                     <td class="text-muted small">{{ venda.data|date:"d/m/Y H:i" }}</td>
                     <td class="text-center">
+                        <!-- Botão "Pagar" aparece apenas para fiados pendentes -->
                         {% if venda.tipo == 'fiado' and not venda.pago %}
                         <form method="post" action="{% url 'pagar_venda' venda.pk %}" class="d-inline">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-success" title="Marcar como pago">
+                            <!-- Sem parâmetro 'next' aqui: volta para lista_vendas (padrão seguro) -->
+                            <button type="submit" class="btn btn-sm btn-outline-success"
+                                    title="Marcar como pago"
+                                    aria-label="Marcar venda de {{ venda.produto.nome }} como paga">
                                 <i class="bi bi-check-lg"></i>
                             </button>
                         </form>
                         {% endif %}
                         <a href="{% url 'editar_venda' venda.pk %}"
-                           class="btn btn-sm btn-outline-warning" title="Editar">
+                           class="btn btn-sm btn-outline-warning" title="Editar"
+                           aria-label="Editar venda {{ venda.pk }}">
                             <i class="bi bi-pencil"></i>
                         </a>
                         <a href="{% url 'deletar_venda' venda.pk %}"
-                           class="btn btn-sm btn-outline-danger" title="Excluir">
+                           class="btn btn-sm btn-outline-danger" title="Excluir"
+                           aria-label="Excluir venda {{ venda.pk }}">
                             <i class="bi bi-trash"></i>
                         </a>
                     </td>
@@ -106,5 +120,45 @@
             </tbody>
         </table>
     </div>
+
+    <!-- ── Paginação ─────────────────────────────────────────────────────── -->
+    <!--
+        Os links de paginação incluem o filtro de tipo ativo para não perdê-lo
+        ao mudar de página (ex.: ?tipo=fiado&page=2).
+    -->
+    {% if page_obj.has_other_pages %}
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+        <small class="text-muted">
+            Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }}
+            de {{ page_obj.paginator.count }} vendas
+        </small>
+        <nav aria-label="Paginação de vendas">
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?{% if tipo_filtro %}tipo={{ tipo_filtro }}&{% endif %}page={{ page_obj.previous_page_number }}"
+                           aria-label="Página anterior">&laquo;</a>
+                    </li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link"
+                           href="?{% if tipo_filtro %}tipo={{ tipo_filtro }}&{% endif %}page={{ num }}">
+                            {{ num }}
+                        </a>
+                    </li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?{% if tipo_filtro %}tipo={{ tipo_filtro }}&{% endif %}page={{ page_obj.next_page_number }}"
+                           aria-label="Próxima página">&raquo;</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

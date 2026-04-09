@@ -1,23 +1,37 @@
 """
-URL configuration for mercearia project.
+Configuração de URLs raiz do projeto Mercearia da Neusa.
 
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/6.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+Estrutura de rotas:
+  /admin/    → Painel de administração Django
+  /login/    → Tela de login (LoginView padrão do Django com template customizado)
+  /logout/   → Encerramento de sessão (redireciona para /login/)
+  /          → App 'clientes' (dashboard, clientes, produtos, vendas)
 """
+
 from django.contrib import admin
-from django.urls import path, include  # Adicione o ', include' aqui!
+from django.urls import path, include
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    # Painel admin nativo do Django (requer superusuário)
     path('admin/', admin.site.urls),
-    path('', include('clientes.urls')), # Agora o Django vai entender essa linha
+
+    # ── Autenticação ──────────────────────────────────────────────────────────
+    # LoginView: renderiza o template clientes/login.html e autentica o usuário.
+    # Após login bem-sucedido, redireciona para LOGIN_REDIRECT_URL (settings.py).
+    path(
+        'login/',
+        auth_views.LoginView.as_view(template_name='clientes/login.html'),
+        name='login',
+    ),
+    # LogoutView: destrói a sessão e redireciona para a tela de login.
+    path(
+        'logout/',
+        auth_views.LogoutView.as_view(next_page='login'),
+        name='logout',
+    ),
+
+    # ── App principal ─────────────────────────────────────────────────────────
+    # Todas as rotas do app 'clientes' ficam em clientes/urls.py
+    path('', include('clientes.urls')),
 ]

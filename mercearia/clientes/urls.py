@@ -20,4 +20,7 @@ urlpatterns = [
     path('vendas/<int:pk>/editar/', views.editar_venda, name='editar_venda'),
     path('vendas/<int:pk>/deletar/', views.deletar_venda, name='deletar_venda'),
     path('vendas/<int:pk>/pagar/', views.pagar_venda, name='pagar_venda'),
+
+    # Cadastro rápido de cliente a partir do formulário de venda (POST → JSON)
+    path('clientes/rapido/', views.criar_cliente_rapido, name='criar_cliente_rapido'),
 ]
