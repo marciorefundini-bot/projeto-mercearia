@@ -1,6 +1,7 @@
 # Mercearia da Neusa
 
-Sistema web para gerenciamento de uma mercearia: controle de clientes, produtos, estoque e vendas. Desenvolvido com Python e Django.
+Sistema web para gerenciamento de uma mercearia: controle de clientes, produtos, estoque e vendas. 
+Desenvolvido com Python e Django.
 
 ## Sobre o sistema
 
